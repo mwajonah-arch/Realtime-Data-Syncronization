@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { useAddActivityLogEntry } from "@workspace/api-client-react";
+import React, { createContext, useContext, useState } from "react";
+import { addActivityLog } from "@/lib/useFirebase";
 
 type Role = "staff" | "admin" | null;
 
@@ -18,17 +18,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return (saved as Role) || null;
   });
 
-  const { mutate: addLog } = useAddActivityLogEntry();
-
   const login = (newRole: "staff" | "admin") => {
     setRole(newRole);
     localStorage.setItem("sjm_role", newRole);
-    addLog({ data: { role: newRole, action: "login", detail: `Signed in as ${newRole}` } });
+    addActivityLog({ ts: new Date().toISOString(), role: newRole, action: "login", detail: `Signed in as ${newRole}` });
   };
 
   const logout = () => {
     if (role) {
-      addLog({ data: { role, action: "logout", detail: "Signed out" } });
+      addActivityLog({ ts: new Date().toISOString(), role, action: "logout", detail: "Signed out" });
     }
     setRole(null);
     localStorage.removeItem("sjm_role");
@@ -36,7 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logActivity = (action: string, detail: string) => {
     if (role) {
-      addLog({ data: { role, action, detail } });
+      addActivityLog({ ts: new Date().toISOString(), role, action, detail });
     }
   };
 
