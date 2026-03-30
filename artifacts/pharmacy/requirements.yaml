@@ -1,0 +1,11 @@
+packages:
+  "date-fns": "For elegant date formatting and manipulation"
+  "recharts": "For the financial reports bar chart"
+  "clsx": "For conditional class merging"
+  "tailwind-merge": "For conditional class merging"
+  "lucide-react": "For beautiful consistent iconography"
+
+notes:
+  - Using generated hooks from @workspace/api-client-react
+  - Simulating role-based auth via React Context since it's a frontend prototype
+  - Custom Tailwind v4 theme applied in index.css

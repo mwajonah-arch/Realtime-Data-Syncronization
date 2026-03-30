@@ -1,22 +1,32 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: SJ Medipoint Pharmacy Manager API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication
+  - name: products
+    description: Product/inventory management
+  - name: sales
+    description: Sales / POS
+  - name: stockUpdates
+    description: Stock updates
+  - name: transactions
+    description: Financial transactions
+  - name: activityLog
+    description: Staff activity log
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +34,291 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login as staff or admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/change-password:
+    post:
+      operationId: changePassword
+      tags: [auth]
+      summary: Change admin password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePasswordRequest"
+      responses:
+        "200":
+          description: Password changed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /products:
+    get:
+      operationId: getProducts
+      tags: [products]
+      summary: Get all products
+      responses:
+        "200":
+          description: List of products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+    post:
+      operationId: createProduct
+      tags: [products]
+      summary: Create a new product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProductRequest"
+      responses:
+        "201":
+          description: Product created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+
+  /products/{id}:
+    put:
+      operationId: updateProduct
+      tags: [products]
+      summary: Update a product
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProductRequest"
+      responses:
+        "200":
+          description: Product updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+    delete:
+      operationId: deleteProduct
+      tags: [products]
+      summary: Delete a product
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Product deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /sales:
+    get:
+      operationId: getSales
+      tags: [sales]
+      summary: Get all sales
+      responses:
+        "200":
+          description: List of sales
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Sale"
+    post:
+      operationId: createSale
+      tags: [sales]
+      summary: Record a sale (POS checkout)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSaleRequest"
+      responses:
+        "201":
+          description: Sale recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Sale"
+
+  /stock-updates:
+    get:
+      operationId: getStockUpdates
+      tags: [stockUpdates]
+      summary: Get all stock updates
+      responses:
+        "200":
+          description: List of stock updates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StockUpdate"
+    post:
+      operationId: createStockUpdate
+      tags: [stockUpdates]
+      summary: Submit a stock update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateStockUpdateRequest"
+      responses:
+        "201":
+          description: Stock updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StockUpdate"
+
+  /transactions:
+    get:
+      operationId: getTransactions
+      tags: [transactions]
+      summary: Get all financial transactions
+      responses:
+        "200":
+          description: List of transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Transaction"
+    post:
+      operationId: createTransaction
+      tags: [transactions]
+      summary: Create a financial transaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTransactionRequest"
+      responses:
+        "201":
+          description: Transaction created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+
+  /transactions/{id}:
+    delete:
+      operationId: deleteTransaction
+      tags: [transactions]
+      summary: Delete a transaction
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Transaction deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /activity-log:
+    get:
+      operationId: getActivityLog
+      tags: [activityLog]
+      summary: Get staff activity log
+      responses:
+        "200":
+          description: Activity log entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityLogEntry"
+    delete:
+      operationId: clearActivityLog
+      tags: [activityLog]
+      summary: Clear activity log
+      responses:
+        "200":
+          description: Log cleared
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /activity-log/entry:
+    post:
+      operationId: addActivityLogEntry
+      tags: [activityLog]
+      summary: Add an activity log entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateActivityLogEntryRequest"
+      responses:
+        "201":
+          description: Entry added
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActivityLogEntry"
+
 components:
   schemas:
     HealthStatus:
@@ -31,6 +326,244 @@ components:
       properties:
         status:
           type: string
-      required:
-        - status
+      required: [status]
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+      required: [success]
+
+    LoginRequest:
+      type: object
+      properties:
+        role:
+          type: string
+          enum: [staff, admin]
+        password:
+          type: string
+      required: [role]
+
+    LoginResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        role:
+          type: string
+      required: [success, role]
+
+    ChangePasswordRequest:
+      type: object
+      properties:
+        currentPassword:
+          type: string
+        newPassword:
+          type: string
+      required: [currentPassword, newPassword]
+
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        cat:
+          type: string
+        unit:
+          type: string
+        qty:
+          type: integer
+        low:
+          type: integer
+        buy:
+          type: number
+        sell:
+          type: number
+        expiry:
+          type: string
+        supplier:
+          type: string
+        createdAt:
+          type: string
+      required: [id, name, cat, unit, qty, low, buy, sell, expiry, supplier]
+
+    CreateProductRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        cat:
+          type: string
+        unit:
+          type: string
+        qty:
+          type: integer
+        low:
+          type: integer
+        buy:
+          type: number
+        sell:
+          type: number
+        expiry:
+          type: string
+        supplier:
+          type: string
+      required: [name, cat, unit, qty, low, buy, sell, expiry, supplier]
+
+    SaleItem:
+      type: object
+      properties:
+        productId:
+          type: integer
+        productName:
+          type: string
+        qty:
+          type: integer
+        price:
+          type: number
+      required: [productId, productName, qty, price]
+
+    Sale:
+      type: object
+      properties:
+        id:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SaleItem"
+        total:
+          type: number
+        staffRole:
+          type: string
+        createdAt:
+          type: string
+      required: [id, items, total, staffRole, createdAt]
+
+    CreateSaleRequest:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SaleItem"
+        total:
+          type: number
+        staffRole:
+          type: string
+      required: [items, total, staffRole]
+
+    StockUpdateItem:
+      type: object
+      properties:
+        productId:
+          type: integer
+        productName:
+          type: string
+        qtyAdded:
+          type: integer
+      required: [productId, productName, qtyAdded]
+
+    StockUpdate:
+      type: object
+      properties:
+        id:
+          type: integer
+        note:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/StockUpdateItem"
+        staffRole:
+          type: string
+        createdAt:
+          type: string
+      required: [id, note, items, staffRole, createdAt]
+
+    CreateStockUpdateRequest:
+      type: object
+      properties:
+        note:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/StockUpdateItem"
+        staffRole:
+          type: string
+      required: [note, items, staffRole]
+
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+        account:
+          type: string
+        category:
+          type: string
+        desc:
+          type: string
+        income:
+          type: number
+        expense:
+          type: number
+        createdAt:
+          type: string
+      required: [id, date, account, category, desc, income, expense]
+
+    CreateTransactionRequest:
+      type: object
+      properties:
+        date:
+          type: string
+        account:
+          type: string
+        category:
+          type: string
+        desc:
+          type: string
+        income:
+          type: number
+        expense:
+          type: number
+      required: [date, account, category, desc, income, expense]
+
+    ActivityLogEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+        ts:
+          type: string
+        role:
+          type: string
+        action:
+          type: string
+        detail:
+          type: string
+      required: [id, ts, role, action, detail]
+
+    CreateActivityLogEntryRequest:
+      type: object
+      properties:
+        role:
+          type: string
+        action:
+          type: string
+        detail:
+          type: string
+      required: [role, action, detail]

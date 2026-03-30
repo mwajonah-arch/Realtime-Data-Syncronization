@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>SJ Medipoint — Pharmacy Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f7f6f3; --surface:#fff; --border:#e8e4dc; --border-strong:#d0cab8;
+    --text:#1a1916; --text-muted:#8a8278;
+    --accent:#2d6a4f; --accent-light:#e8f4f0; --accent-hover:#235c42;
+    --danger:#c0392b; --danger-light:#fdf0ee;
+    --warn:#d4a017; --warn-light:#fdf8e8;
+    --admin:#3b4fa8; --admin-light:#eef0fb;
+    --stock:#7b3fa0; --stock-light:#f3eefa;
+    --mono:'DM Mono',monospace; --sans:'DM Sans',sans-serif;
+    --radius:8px;
+    --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+    --shadow-md:0 4px 12px rgba(0,0,0,.10);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5;}
+  #login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;}
+  .login-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:36px 32px;width:100%;max-width:360px;box-shadow:var(--shadow-md);}
+  .login-logo-name{font-size:18px;font-weight:600;letter-spacing:-.4px;}
+  .login-logo-sub{font-size:12px;color:var(--text-muted);font-family:var(--mono);margin-top:3px;margin-bottom:28px;}
+  .login-section-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:12px;}
+  .login-roles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
+  .role-btn{padding:14px 10px;border:2px solid var(--border);border-radius:var(--radius);cursor:pointer;text-align:center;transition:all .15s;background:var(--bg);}
+  .role-btn:hover{border-color:var(--accent);}
+  .role-btn.selected{border-color:var(--accent);background:var(--accent-light);}
+  .role-btn.selected.admin-role{border-color:var(--admin);background:var(--admin-light);}
+  .role-icon{font-size:24px;margin-bottom:6px;} .role-label{font-size:13px;font-weight:600;} .role-desc{font-size:11px;color:var(--text-muted);margin-top:2px;}
+  .login-err{color:var(--danger);font-size:12px;margin-top:8px;min-height:16px;}
+  .login-hint{margin-top:14px;font-size:11px;color:var(--text-muted);font-family:var(--mono);}
+  .app{display:flex;min-height:100vh;}
+  .sidebar{width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:transform .25s;}
+  .logo{padding:22px 20px 18px;border-bottom:1px solid var(--border);}
+  .logo-name{font-size:15px;font-weight:600;letter-spacing:-.3px;} .logo-sub{font-size:11px;color:var(--text-muted);font-family:var(--mono);margin-top:2px;}
+  nav{padding:12px 10px;flex:1;overflow-y:auto;}
+  .nav-section-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);padding:10px 12px 4px;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--radius);cursor:pointer;color:var(--text-muted);font-size:13.5px;transition:all .15s;margin-bottom:2px;user-select:none;}
+  .nav-item:hover{background:var(--bg);color:var(--text);}
+  .nav-item.active{background:var(--accent-light);color:var(--accent);font-weight:500;}
+  .nav-item.admin-nav.active{background:var(--admin-light);color:var(--admin);font-weight:500;}
+  .nav-icon{font-size:15px;width:20px;text-align:center;}
+  .nav-admin-badge{font-size:9px;font-family:var(--mono);background:var(--admin-light);color:var(--admin);border-radius:4px;padding:1px 5px;margin-left:auto;font-weight:700;}
+  .sidebar-footer{padding:14px 20px;border-top:1px solid var(--border);font-size:11px;color:var(--text-muted);font-family:var(--mono);}
+  .user-pill{display:flex;align-items:center;gap:8px;margin-bottom:10px;background:var(--bg);border-radius:var(--radius);padding:8px 10px;border:1px solid var(--border);}
+  .user-pill-avatar{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;}
+  .user-pill-name{font-size:12px;font-weight:500;color:var(--text);font-family:var(--sans);} .user-pill-role{font-size:10px;color:var(--text-muted);}
+  .sidebar-btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
+  .logout-btn{font-size:11px;cursor:pointer;color:var(--text-muted);text-decoration:underline;} .logout-btn:hover{color:var(--danger);}
+  .change-pw-btn{font-size:11px;cursor:pointer;color:var(--admin);text-decoration:underline;}
+  .main{margin-left:220px;flex:1;padding:32px;max-width:1200px;}
+  .mobile-topbar{display:none;position:fixed;top:0;left:0;right:0;height:52px;background:var(--surface);border-bottom:1px solid var(--border);z-index:200;align-items:center;padding:0 16px;gap:12px;}
+  .hamburger{font-size:20px;cursor:pointer;color:var(--text);background:none;border:none;padding:4px;}
+  .mobile-logo{font-size:14px;font-weight:600;flex:1;}
+  .mobile-role-badge{font-size:10px;font-family:var(--mono);padding:2px 8px;border-radius:20px;font-weight:700;}
+  .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:99;}
+  .page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;}
+  .page-title{font-size:22px;font-weight:600;letter-spacing:-.5px;} .page-sub{font-size:13px;color:var(--text-muted);margin-top:3px;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .card-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .card-title{font-size:13px;font-weight:600;} .card-body{padding:20px;}
+  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+  .stats-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;}
+  .stats-grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:20px;}
+  .stats-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);}
+  .stat-label{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted);margin-bottom:6px;}
+  .stat-value{font-size:22px;font-weight:600;font-family:var(--mono);letter-spacing:-1px;}
+  .stat-value.green{color:var(--accent);}.stat-value.red{color:var(--danger);}.stat-value.warn{color:var(--warn);}.stat-value.blue{color:var(--admin);}.stat-value.purple{color:var(--stock);}
+  .stat-sub{font-size:11px;color:var(--text-muted);margin-top:4px;font-family:var(--mono);}
+  .table-wrap{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;}
+  thead th{text-align:left;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);padding:10px 16px;border-bottom:1px solid var(--border);background:var(--bg);}
+  tbody td{padding:10px 16px;border-bottom:1px solid var(--border);font-size:13.5px;vertical-align:middle;}
+  tbody tr:last-child td{border-bottom:none;} tbody tr:hover{background:var(--bg);}
+  .mono{font-family:var(--mono);} .text-right{text-align:right;}
+  .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500;font-family:var(--mono);}
+  .badge-green{background:var(--accent-light);color:var(--accent);}
+  .badge-red{background:var(--danger-light);color:var(--danger);}
+  .badge-warn{background:var(--warn-light);color:var(--warn);}
+  .badge-gray{background:var(--bg);color:var(--text-muted);border:1px solid var(--border);}
+  .badge-blue{background:var(--admin-light);color:var(--admin);}
+  .badge-purple{background:var(--stock-light);color:var(--stock);}
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:var(--radius);font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .15s;font-family:var(--sans);}
+  .btn-primary{background:var(--accent);color:#fff;}.btn-primary:hover{background:var(--accent-hover);}
+  .btn-ghost{background:transparent;color:var(--text-muted);border:1px solid var(--border);}.btn-ghost:hover{background:var(--bg);color:var(--text);}
+  .btn-danger{background:var(--danger-light);color:var(--danger);border:1px solid #f0c0bc;}.btn-danger:hover{background:#f9d8d5;}
+  .btn-admin{background:var(--admin-light);color:var(--admin);border:1px solid #c8ceef;}.btn-admin:hover{background:#dde0f5;}
+  .btn-stock{background:var(--stock-light);color:var(--stock);border:1px solid #d9bfef;}.btn-stock:hover{background:#ead8f7;}
+  .btn-sm{padding:5px 10px;font-size:12px;}.btn-lg{padding:13px 20px;font-size:15px;font-weight:600;}
+  .w-full{width:100%;justify-content:center;}
+  .form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;}
+  .form-group{display:flex;flex-direction:column;gap:5px;}
+  .form-label{font-size:11px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;}
+  .form-input,.form-select{padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13.5px;font-family:var(--sans);background:var(--surface);color:var(--text);outline:none;transition:border-color .15s;}
+  .form-input:focus,.form-select:focus{border-color:var(--accent);}
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .2s;}
+  .modal-overlay.open{opacity:1;pointer-events:all;}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px;width:100%;max-width:480px;box-shadow:var(--shadow-md);transform:translateY(8px);transition:transform .2s;max-height:90vh;overflow-y:auto;}
+  .modal-overlay.open .modal{transform:translateY(0);}
+  .modal-title{font-size:16px;font-weight:600;margin-bottom:20px;}
+  .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:24px;flex-wrap:wrap;}
+  .tabs{display:flex;gap:4px;margin-bottom:20px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:4px;width:fit-content;flex-wrap:wrap;}
+  .tab{padding:6px 14px;border-radius:6px;font-size:13px;cursor:pointer;color:var(--text-muted);transition:all .15s;}
+  .tab.active{background:var(--surface);color:var(--text);font-weight:500;box-shadow:var(--shadow);}
+  .section{display:none;}.section.active{display:block;}
+  .search-bar{position:relative;}
+  .search-bar input{padding-left:32px;width:220px;}
+  .search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:14px;pointer-events:none;}
+  .chart-bars{display:flex;align-items:flex-end;gap:8px;height:140px;padding:0 4px;}
+  .chart-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end;}
+  .chart-bar{width:100%;border-radius:4px 4px 0 0;min-height:2px;}
+  .chart-bar.income{background:var(--accent);opacity:.85;}.chart-bar.expense{background:#e07070;opacity:.75;}
+  .chart-label{font-size:10px;color:var(--text-muted);font-family:var(--mono);text-align:center;}
+  .pos-layout{display:grid;grid-template-columns:1fr 340px;gap:20px;}
+  .pos-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;}
+  .pos-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;cursor:pointer;transition:all .15s;text-align:center;}
+  .pos-item:hover,.pos-item:active{border-color:var(--accent);background:var(--accent-light);}
+  .pos-item-name{font-size:12px;font-weight:500;margin-bottom:4px;}
+  .pos-item-price{font-size:14px;font-family:var(--mono);color:var(--accent);}
+  .pos-item-stock{font-size:11px;color:var(--text-muted);margin-top:3px;}
+  .cart{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;position:sticky;top:32px;}
+  .cart-title{font-size:14px;font-weight:600;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+  .cart-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;}
+  .cart-item-name{flex:1;font-size:12px;}
+  .cart-item-qty{display:flex;align-items:center;gap:6px;}
+  .qty-btn{width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:var(--bg);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .1s;touch-action:manipulation;}
+  .qty-btn:hover,.qty-btn:active{background:var(--accent-light);border-color:var(--accent);}
+  .cart-total{margin-top:16px;padding-top:12px;border-top:2px solid var(--border);display:flex;justify-content:space-between;font-weight:600;font-size:15px;}
+  .fin-income{color:var(--accent);font-family:var(--mono);}
+  .fin-expense{color:var(--danger);font-family:var(--mono);}
+  .fin-balance{font-family:var(--mono);font-weight:500;}
+  .fin-summary-row td{background:var(--accent-light)!important;font-weight:600;}
+  .fin-summary-row:hover td{background:var(--accent-light)!important;}
+  .stock-summary-row td{background:var(--stock-light)!important;font-weight:600;}
+  .stock-summary-row:hover td{background:var(--stock-light)!important;}
+  .empty{text-align:center;padding:36px 20px;color:var(--text-muted);}
+  .empty-icon{font-size:30px;margin-bottom:10px;} .empty-text{font-size:13px;}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  .mt-4{margin-top:16px;} .mt-2{margin-top:8px;}
+  .flex{display:flex;} .gap-2{gap:8px;} .items-center{align-items:center;}
+  .role-tag{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;font-family:var(--mono);}
+  .role-tag.admin{background:var(--admin-light);color:var(--admin);}
+  .role-tag.user{background:var(--accent-light);color:var(--accent);}
+  .toast{position:fixed;bottom:80px;right:16px;background:var(--text);color:#fff;padding:10px 18px;border-radius:var(--radius);font-size:13px;z-index:999;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none;max-width:90vw;}
+  .toast.show{opacity:1;transform:translateY(0);}
+  /* STOCK UPDATE */
+  .stock-update-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;}
+  .stock-item-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;transition:border-color .15s;}
+  .stock-item-card:focus-within{border-color:var(--stock);}
+  .stock-item-name{font-size:12px;font-weight:600;margin-bottom:2px;}
+  .stock-item-current{font-size:11px;color:var(--text-muted);margin-bottom:8px;}
+  .stock-input-row{display:flex;align-items:center;gap:6px;}
+  .stock-qty-input{width:64px;padding:7px 8px;border:1px solid var(--border);border-radius:6px;font-size:15px;font-family:var(--mono);text-align:center;background:var(--bg);}
+  .stock-qty-input:focus{border-color:var(--stock);outline:none;background:#fff;}
+  .stock-item-unit{font-size:11px;color:var(--text-muted);}
+  /* EOD */
+  .eod-section{margin-bottom:28px;}
+  .eod-section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+  .eod-section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+  .eod-highlight{background:linear-gradient(135deg,var(--accent-light),#f0faf6);border:1px solid #b2d8c8;border-radius:var(--radius);padding:18px 20px;margin-bottom:24px;}
+  .eod-highlight-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;}
+  .eod-highlight-label{font-size:13px;color:var(--text-muted);}
+  .eod-highlight-val{font-size:15px;font-weight:600;font-family:var(--mono);}
+  /* MOBILE BOTTOM NAV */
+  .mobile-staff-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);z-index:150;padding:6px 0 env(safe-area-inset-bottom,6px);}
+  .mobile-staff-nav-inner{display:flex;justify-content:space-around;}
+  .mobile-nav-btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 10px;border-radius:var(--radius);cursor:pointer;color:var(--text-muted);border:none;background:none;font-family:var(--sans);transition:color .15s;}
+  .mobile-nav-btn.active{color:var(--accent);}
+  .mobile-nav-btn .mnb-icon{font-size:20px;}
+  .mobile-nav-btn .mnb-label{font-size:10px;font-weight:500;}
+  @media(max-width:768px){
+    .sidebar{transform:translateX(-100%);}
+    .sidebar.open{transform:translateX(0);}
+    .mobile-topbar{display:flex;}
+    .main{margin-left:0;padding:16px;padding-top:68px;padding-bottom:86px;}
+    .stats-grid,.stats-grid-4{grid-template-columns:repeat(2,1fr);}
+    .stats-grid-3{grid-template-columns:repeat(2,1fr);}
+    .pos-layout{grid-template-columns:1fr;}
+    .grid-2{grid-template-columns:1fr;}
+    .page-title{font-size:18px;}
+    .search-bar input{width:100%;}
+    .search-bar{flex:1;}
+    .mobile-staff-nav{display:block;}
+    .desktop-staff-nav{display:none!important;}
+    table{font-size:12px;}
+    thead th{padding:8px 10px;font-size:10px;}
+    tbody td{padding:8px 10px;}
+    .pos-items{grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;}
+    .pos-item{padding:10px 8px;}
+    .pos-item-name{font-size:11px;}
+    .cart{position:static;}
+    .stock-update-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));}
+    .toast{bottom:90px;}
+  }
+  @media(max-width:420px){
+    .stats-grid,.stats-grid-4,.stats-grid-3,.stats-grid-2{grid-template-columns:1fr 1fr;}
+    .login-box{padding:28px 20px;}
+  }
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo-name">SJ Medipoint</div>
+    <div class="login-logo-sub">Pharmacy Manager</div>
+    <div class="login-section-label">Sign in as</div>
+    <div class="login-roles">
+      <div class="role-btn selected" id="role-user" onclick="selectRole('user')">
+        <div class="role-icon">👤</div><div class="role-label">Staff</div><div class="role-desc">POS, stock & sales</div>
+      </div>
+      <div class="role-btn admin-role" id="role-admin" onclick="selectRole('admin')">
+        <div class="role-icon">🔐</div><div class="role-label">Admin</div><div class="role-desc">Full access</div>
+      </div>
+    </div>
+    <div id="admin-pass-wrap" style="display:none;margin-bottom:14px">
+      <div class="form-group"><label class="form-label">Admin Password</label><input class="form-input" id="admin-pass" type="password" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    </div>
+    <button class="btn btn-primary w-full" onclick="doLogin()">Continue →</button>
+    <div class="login-err" id="login-err"></div>
+    <div class="login-hint" id="login-hint">Default admin password: <strong>admin1234</strong></div>
+  </div>
+</div>
+
+<div class="app" id="app" style="display:none">
+  <div class="mobile-topbar">
+    <button class="hamburger" onclick="toggleSidebar()">☰</button>
+    <div class="mobile-logo">SJ Medipoint</div>
+    <div class="mobile-role-badge" id="mobile-role-badge"></div>
+  </div>
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="logo"><div class="logo-name">SJ Medipoint</div><div class="logo-sub">Pharmacy Manager</div></div>
+    <nav id="sidebar-nav"></nav>
+    <div class="sidebar-footer">
+      <div class="user-pill" id="user-pill"></div>
+      <div class="sidebar-btn-row">
+        <span class="logout-btn" onclick="logout()">← Sign out</span>
+        <span id="change-pw-link" style="display:none" class="change-pw-btn" onclick="openModal('modal-change-pw')">🔑 Change PW</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Mobile bottom nav for staff -->
+  <div class="mobile-staff-nav" id="mobile-staff-nav" style="display:none">
+    <div class="mobile-staff-nav-inner">
+      <button class="mobile-nav-btn active" id="mnb-dashboard" onclick="mobileNav('staff-dashboard','mnb-dashboard')"><span class="mnb-icon">🏠</span><span class="mnb-label">Home</span></button>
+      <button class="mobile-nav-btn" id="mnb-pos" onclick="mobileNav('pos','mnb-pos')"><span class="mnb-icon">🛒</span><span class="mnb-label">Sell</span></button>
+      <button class="mobile-nav-btn" id="mnb-stock-update" onclick="mobileNav('stock-update','mnb-stock-update')"><span class="mnb-icon">📦</span><span class="mnb-label">Add Stock</span></button>
+      <button class="mobile-nav-btn" id="mnb-inventory" onclick="mobileNav('inventory','mnb-inventory')"><span class="mnb-icon">📋</span><span class="mnb-label">Inventory</span></button>
+      <button class="mobile-nav-btn" id="mnb-my-summary" onclick="mobileNav('my-summary','mnb-my-summary')"><span class="mnb-icon">📊</span><span class="mnb-label">Summary</span></button>
+    </div>
+  </div>
+
+  <main class="main">
+
+    <!-- ADMIN DASHBOARD -->
+    <div id="sec-dashboard" class="section">
+      <div class="page-header">
+        <div><div class="page-title">Dashboard</div><div class="page-sub">Full pharmacy overview</div></div>
+        <div class="flex gap-2 items-center"><span class="role-tag admin">Admin</span><span style="font-size:12px;color:var(--text-muted);font-family:var(--mono)" id="dash-date"></span></div>
+      </div>
+      <div class="stats-grid" id="dash-stats"></div>
+      <div class="grid-2">
+        <div class="card"><div class="card-header"><span class="card-title">Low Stock Alerts</span></div><div id="low-stock-list"></div></div>
+        <div class="card"><div class="card-header"><span class="card-title">Expiring Soon (30 days)</span></div><div id="expiry-list"></div></div>
+      </div>
+      <div class="card mt-4">
+        <div class="card-header"><span class="card-title">Recent Transactions</span></div>
+        <div class="table-wrap"><table><thead><tr><th>Date</th><th>Description</th><th>Category</th><th class="text-right">Income</th><th class="text-right">Expense</th><th class="text-right">Net</th></tr></thead><tbody id="recent-txn"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- STAFF DASHBOARD -->
+    <div id="sec-staff-dashboard" class="section">
+      <div class="page-header">
+        <div><div class="page-title">Good day 👋</div><div class="page-sub" id="staff-dash-date"></div></div>
+        <span class="role-tag user">Staff</span>
+      </div>
+      <div class="stats-grid-4" id="staff-dash-stats"></div>
+      <div class="grid-2">
+        <div class="card"><div class="card-header"><span class="card-title">Today's Sales</span></div><div class="table-wrap"><table><thead><tr><th>Time</th><th>Items</th><th class="text-right">Amount</th></tr></thead><tbody id="staff-today-sales"></tbody></table></div></div>
+        <div class="card"><div class="card-header"><span class="card-title">Stock Added Today</span></div><div id="staff-today-stock"></div></div>
+      </div>
+      <div class="card mt-4"><div class="card-header"><span class="card-title">Low Stock Alerts</span></div><div id="staff-low-stock"></div></div>
+    </div>
+
+    <!-- INVENTORY -->
+    <div id="sec-inventory" class="section">
+      <div class="page-header">
+        <div><div class="page-title">Inventory</div><div class="page-sub">Current stock levels</div></div>
+        <div class="flex gap-2" style="flex-wrap:wrap;">
+          <div class="search-bar"><span class="search-icon">⌕</span><input class="form-input" id="inv-search" placeholder="Search products..." oninput="renderInventory()"></div>
+          <button class="btn btn-primary" id="btn-add-product" onclick="openModal('modal-add-product')" style="display:none">+ Add Product</button>
+        </div>
+      </div>
+      <div class="card"><div class="table-wrap"><table>
+        <thead><tr><th>Product</th><th>Category</th><th>Qty</th><th>Unit</th><th id="th-buy-price">Buy Price</th><th>Sell Price</th><th>Expiry</th><th>Status</th><th id="th-actions"></th></tr></thead>
+        <tbody id="inv-table"></tbody>
+      </table></div></div>
+    </div>
+
+    <!-- POS -->
+    <div id="sec-pos" class="section">
+      <div class="page-header">
+        <div><div class="page-title">Point of Sale</div><div class="page-sub">Record a sale</div></div>
+        <div class="search-bar"><span class="search-icon">⌕</span><input class="form-input" id="pos-search" placeholder="Search..." oninput="renderPOS()"></div>
+      </div>
+      <div class="pos-layout">
+        <div><div class="pos-items" id="pos-grid"></div></div>
+        <div class="cart">
+          <div class="cart-title">Current Sale</div>
+          <div id="cart-items"></div>
+          <div class="cart-total"><span>Total</span><span class="mono" id="cart-total" style="color:var(--accent)">KES 0</span></div>
+          <button class="btn btn-primary w-full mt-4" style="padding:14px;" onclick="completeSale()">✓ Complete Sale</button>
+          <button class="btn btn-ghost w-full" style="margin-top:8px" onclick="clearCart()">Clear Cart</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STOCK UPDATE -->
+    <div id="sec-stock-update" class="section">
+      <div class="page-header">
+        <div><div class="page-title">Add Stock</div><div class="page-sub">Enter quantities received</div></div>
+        <span class="role-tag user" style="background:var(--stock-light);color:var(--stock);">Staff</span>
+      </div>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-body" style="padding:16px 20px;">
+          <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">Enter the quantity <strong>added</strong> for each product received. Leave blank or 0 if unchanged.</p>
+          <div class="form-group" style="max-width:420px;"><label class="form-label">Delivery Note (optional)</label><input class="form-input" id="stock-note" placeholder="e.g. Cosmos delivery, batch #12"></div>
+        </div>
+      </div>
+      <div class="flex gap-2" style="margin-bottom:16px;flex-wrap:wrap;">
+        <div class="search-bar" style="flex:1;min-width:180px;"><span class="search-icon">⌕</span><input class="form-input" id="stock-search" placeholder="Search products..." oninput="renderStockUpdate()" style="width:100%;"></div>
+        <button class="btn btn-stock btn-lg" onclick="submitStockUpdate()">📦 Submit Stock Update</button>
+      </div>
+      <div class="stock-update-grid" id="stock-update-grid"></div>
+    </div>
+
+    <!-- FINANCIALS -->
+    <div id="sec-financials" class="section">
+      <div class="page-header">
+        <div><div class="page-title">Financials</div><div class="page-sub">Income, expenses & ledger</div></div>
+        <div class="flex gap-2 items-center flex-wrap"><span class="role-tag admin">Admin Only</span><button class="btn btn-primary" onclick="openModal('modal-add-txn')">+ Add Transaction</button></div>
+      </div>
+      <div class="tabs">
+        <div class="tab active" onclick="switchFinTab('all',this)">All</div>
+        <div class="tab" onclick="switchFinTab('Nov 2025',this)">Nov 2025</div>
+        <div class="tab" onclick="switchFinTab('Dec 2025',this)">Dec 2025</div>
+        <div class="tab" onclick="switchFinTab('Jan 2026',this)">Jan 2026</div>
+        <div class="tab" onclick="switchFinTab('Feb 2026',this)">Feb 2026</div>
+        <div class="tab" onclick="switchFinTab('Mar 2026',this)">Mar 2026</div>
+      </div>
+      <div class="card"><div class="table-wrap"><table>
+        <thead><tr><th>Date</th><th>Account</th><th>Category</th><th>Description</th><th class="text-right">Income</th><th class="text-right">Expense</th><th class="text-right">Balance</th></tr></thead>
+        <tbody id="fin-table"></tbody>
+      </table></div></div>
+    </div>
+
+    <!-- END OF DAY REPORT -->
+    <div id="sec-eod" class="section">
+      <div class="page-header">
+        <div><div class="page-title">End of Day Report</div><div class="page-sub">Daily summary of sales & stock</div></div>
+        <div class="flex gap-2 items-center flex-wrap">
+          <span class="role-tag admin">Admin Only</span>
+          <input type="date" class="form-input" id="eod-date" onchange="renderEOD()" style="font-size:13px;">
+        </div>
+      </div>
+      <div id="eod-content"></div>
+    </div>
+
+    <!-- REPORTS -->
+    <div id="sec-reports" class="section">
+      <div class="page-header">
+        <div><div class="page-title">Reports</div><div class="page-sub">Monthly summaries & trends</div></div>
+        <span class="role-tag admin">Admin Only</span>
+      </div>
+      <div class="stats-grid" id="rep-stats"></div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Monthly Income vs Expenses</span></div>
+          <div class="card-body">
+            <div style="display:flex;gap:12px;margin-bottom:12px;font-size:11px">
+              <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;background:var(--accent);border-radius:2px;display:inline-block"></span>Income</span>
+              <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;background:#e07070;border-radius:2px;display:inline-block"></span>Expenses</span>
+            </div>
+            <div class="chart-bars" id="chart-bars"></div>
+          </div>
+        </div>
+        <div class="card"><div class="card-header"><span class="card-title">Monthly Summary</span></div><div class="table-wrap"><table><thead><tr><th>Month</th><th class="text-right">Income</th><th class="text-right">Expenses</th><th class="text-right">Net</th></tr></thead><tbody id="monthly-summary"></tbody></table></div></div>
+      </div>
+      <div class="card mt-4"><div class="card-header"><span class="card-title">Full Sales History</span></div><div class="table-wrap"><table><thead><tr><th>Date & Time</th><th>Items</th><th class="text-right">Total</th></tr></thead><tbody id="sales-history"></tbody></table></div></div>
+    </div>
+
+    <!-- STAFF ACTIVITY -->
+    <div id="sec-activity" class="section">
+      <div class="page-header">
+        <div><div class="page-title">Staff Activity</div><div class="page-sub">All actions by staff</div></div>
+        <div class="flex gap-2 items-center"><span class="role-tag admin">Admin Only</span><button class="btn btn-danger btn-sm" onclick="clearActivityLog()">Clear Log</button></div>
+      </div>
+      <div class="card"><div class="table-wrap"><table><thead><tr><th>Time</th><th>Role</th><th>Action</th><th>Detail</th></tr></thead><tbody id="activity-table"></tbody></table></div></div>
+    </div>
+
+    <!-- MY SUMMARY (STAFF) -->
+    <div id="sec-my-summary" class="section">
+      <div class="page-header">
+        <div><div class="page-title">My Summary</div><div class="page-sub">Your sales & stock updates</div></div>
+        <span class="role-tag user">Staff View</span>
+      </div>
+      <div class="stats-grid-4" id="summary-stats"></div>
+      <div class="grid-2">
+        <div class="card"><div class="card-header"><span class="card-title">Sales This Month</span></div><div class="table-wrap"><table><thead><tr><th>Date & Time</th><th>Items</th><th class="text-right">Total</th></tr></thead><tbody id="my-sales-table"></tbody></table></div></div>
+        <div class="card"><div class="card-header"><span class="card-title">Stock Updates This Month</span></div><div class="table-wrap"><table><thead><tr><th>Date</th><th>Product</th><th>Added</th></tr></thead><tbody id="my-stock-table"></tbody></table></div></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="modal-add-product">
+  <div class="modal">
+    <div class="modal-title">Add Product</div>
+    <div class="form-grid">
+      <div class="form-group" style="grid-column:1/-1"><label class="form-label">Product Name</label><input class="form-input" id="p-name" placeholder="e.g. Paracetamol 500mg"></div>
+      <div class="form-group"><label class="form-label">Category</label><select class="form-select" id="p-cat"><option>Analgesics</option><option>Antibiotics</option><option>Antifungals</option><option>Vitamins</option><option>Antiseptics</option><option>Antihistamines</option><option>Gastrointestinal</option><option>Cardiovascular</option><option>Dermatology</option><option>Other</option></select></div>
+      <div class="form-group"><label class="form-label">Unit</label><select class="form-select" id="p-unit"><option>Tabs</option><option>Capsules</option><option>Bottles</option><option>Sachets</option><option>Vials</option><option>Pieces</option><option>Boxes</option></select></div>
+      <div class="form-group"><label class="form-label">Quantity</label><input class="form-input" id="p-qty" type="number" min="0" placeholder="0"></div>
+      <div class="form-group"><label class="form-label">Low Stock Alert</label><input class="form-input" id="p-low" type="number" min="0" placeholder="10"></div>
+      <div class="form-group"><label class="form-label">Buy Price (KES)</label><input class="form-input" id="p-buy" type="number" min="0" placeholder="0"></div>
+      <div class="form-group"><label class="form-label">Sell Price (KES)</label><input class="form-input" id="p-sell" type="number" min="0" placeholder="0"></div>
+      <div class="form-group"><label class="form-label">Expiry Date</label><input class="form-input" id="p-expiry" type="date"></div>
+      <div class="form-group"><label class="form-label">Supplier</label><input class="form-input" id="p-supplier" placeholder="Supplier name"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-add-product')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveProduct()">Save Product</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-add-txn">
+  <div class="modal">
+    <div class="modal-title">Add Transaction</div>
+    <div class="form-grid">
+      <div class="form-group"><label class="form-label">Date</label><input class="form-input" id="t-date" type="date"></div>
+      <div class="form-group"><label class="form-label">Account</label><select class="form-select" id="t-account"><option>Cash</option><option>Checking</option><option>Credit</option><option>Mobile Money</option></select></div>
+      <div class="form-group"><label class="form-label">Category</label><select class="form-select" id="t-cat"><option>Stock</option><option>Shipping</option><option>Rent</option><option>Stationery</option><option>Development</option><option>Salaries</option><option>Utilities</option><option>Sales</option><option>Other</option></select></div>
+      <div class="form-group" style="grid-column:1/-1"><label class="form-label">Description</label><input class="form-input" id="t-desc" placeholder="Brief description"></div>
+      <div class="form-group"><label class="form-label">Income (KES)</label><input class="form-input" id="t-inc" type="number" min="0" placeholder="0"></div>
+      <div class="form-group"><label class="form-label">Expense (KES)</label><input class="form-input" id="t-exp" type="number" min="0" placeholder="0"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-add-txn')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveTransaction()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-change-pw">
+  <div class="modal">
+    <div class="modal-title">🔑 Change Admin Password</div>
+    <div class="form-grid" style="grid-template-columns:1fr;">
+      <div class="form-group"><label class="form-label">Current Password</label><input class="form-input" id="pw-current" type="password" placeholder="Enter current password"></div>
+      <div class="form-group"><label class="form-label">New Password</label><input class="form-input" id="pw-new" type="password" placeholder="Min 6 characters"></div>
+      <div class="form-group"><label class="form-label">Confirm New Password</label><input class="form-input" id="pw-confirm" type="password" placeholder="Repeat new password"></div>
+      <div id="pw-err" style="color:var(--danger);font-size:12px;min-height:16px;"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-change-pw')">Cancel</button>
+      <button class="btn btn-admin" onclick="changePassword()">Update Password</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let currentRole=null,selectedRole='user',cart=[],finTab='all';
+const DB={get:(k,d)=>{try{return JSON.parse(localStorage.getItem('sjm_'+k))??d;}catch{return d;}},set:(k,v)=>localStorage.setItem('sjm_'+k,JSON.stringify(v))};
+function getAdminPassword(){return DB.get('adminPassword','admin1234');}
+
+function initData(){
+  if(!DB.get('init4',false)){
+    DB.set('transactions',[
+      {id:1,date:'2025-11-30',account:'Cash',category:'Stock',desc:'Initial Stock',income:0,expense:18272},
+      {id:2,date:'2025-11-30',account:'Cash',category:'Recurrent',desc:'Rent + deposit',income:0,expense:4000},
+      {id:3,date:'2025-11-30',account:'Cash',category:'Development',desc:'Shelves + Modification',income:0,expense:20000},
+      {id:4,date:'2025-11-30',account:'Cash',category:'Development',desc:'Paint, counter door',income:0,expense:6400},
+      {id:5,date:'2025-12-01',account:'Credit',category:'Shipping',desc:'Stock',income:0,expense:5073},
+      {id:6,date:'2025-12-02',account:'Cash',category:'Stock',desc:'Stock',income:0,expense:1027},
+      {id:7,date:'2025-12-07',account:'Checking',category:'Balance',desc:'Stock',income:0,expense:2722},
+      {id:8,date:'2025-12-10',account:'Credit',category:'Stationery',desc:'Stock',income:0,expense:3132},
+      {id:9,date:'2025-12-12',account:'',category:'Stock',desc:'Stock - pockets',income:0,expense:406},
+      {id:10,date:'2025-12-17',account:'',category:'Stock',desc:'Stock',income:0,expense:1452},
+      {id:11,date:'2025-12-19',account:'',category:'Stock',desc:'Stock',income:0,expense:1308},
+      {id:12,date:'2025-12-28',account:'',category:'Stock',desc:'Stock',income:0,expense:1330},
+      {id:13,date:'2025-12-30',account:'',category:'Stock',desc:'Stock',income:0,expense:510},
+      {id:14,date:'2025-12-31',account:'Cash',category:'Sales',desc:'Closing sales',income:15715,expense:0},
+      {id:15,date:'2026-01-04',account:'',category:'Stock',desc:'Stock',income:0,expense:1515},
+      {id:16,date:'2026-01-11',account:'',category:'Stock',desc:'Stock',income:0,expense:1918},
+      {id:17,date:'2026-01-13',account:'',category:'Stock',desc:'Stock',income:0,expense:1296},
+      {id:18,date:'2026-01-14',account:'',category:'Stock',desc:'Stock',income:0,expense:1359},
+      {id:19,date:'2026-01-18',account:'',category:'Stock',desc:'Stock',income:0,expense:2404},
+      {id:20,date:'2026-01-26',account:'',category:'Stock',desc:'Stock',income:0,expense:3041},
+      {id:21,date:'2026-01-31',account:'Cash',category:'Sales',desc:'Closing sales',income:21015,expense:0},
+      {id:22,date:'2026-02-02',account:'',category:'Stock',desc:'Stock',income:0,expense:6352},
+      {id:23,date:'2026-02-06',account:'',category:'Stock',desc:'Stock',income:0,expense:2699},
+      {id:24,date:'2026-02-11',account:'',category:'Stock',desc:'Stock',income:0,expense:2914},
+      {id:25,date:'2026-02-15',account:'',category:'Stock',desc:'Stock',income:0,expense:2679},
+      {id:26,date:'2026-02-20',account:'',category:'Stock',desc:'Stock',income:0,expense:4009},
+      {id:27,date:'2026-02-26',account:'',category:'Stock',desc:'Stock',income:0,expense:1558},
+      {id:28,date:'2026-02-28',account:'',category:'Sales',desc:'Closing sales',income:25250,expense:0},
+      {id:29,date:'2026-03-03',account:'',category:'Stock',desc:'Stock',income:0,expense:3831},
+      {id:30,date:'2026-03-04',account:'',category:'Stock',desc:'Stock',income:0,expense:2291},
+      {id:31,date:'2026-03-11',account:'',category:'Stock',desc:'Stock',income:0,expense:2584},
+      {id:32,date:'2026-03-18',account:'',category:'Stock',desc:'Stock',income:0,expense:855},
+      {id:33,date:'2026-03-25',account:'',category:'Stock',desc:'Stock',income:0,expense:2680},
+      {id:34,date:'2026-03-29',account:'',category:'Sales',desc:'Provisional Closing sales',income:19290,expense:0},
+    ]);
+    DB.set('products',[
+      {id:1,name:'Paracetamol 500mg',cat:'Analgesics',unit:'Tabs',qty:200,low:50,buy:5,sell:10,expiry:'2027-06-30',supplier:'Cosmos'},
+      {id:2,name:'Amoxicillin 250mg',cat:'Antibiotics',unit:'Capsules',qty:8,low:20,buy:120,sell:200,expiry:'2026-09-15',supplier:'Dawa'},
+      {id:3,name:'ORS Sachets',cat:'Gastrointestinal',unit:'Sachets',qty:3,low:30,buy:15,sell:30,expiry:'2026-12-31',supplier:'Cosmos'},
+      {id:4,name:'Vitamin C 500mg',cat:'Vitamins',unit:'Tabs',qty:150,low:30,buy:8,sell:15,expiry:'2027-03-31',supplier:'Dawa'},
+      {id:5,name:'Betadine Solution',cat:'Antiseptics',unit:'Bottles',qty:25,low:10,buy:180,sell:280,expiry:'2026-11-30',supplier:'CarePlus'},
+      {id:6,name:'Micromol',cat:'Analgesics',unit:'Bottles',qty:8,low:6,buy:23,sell:50,expiry:'2028-12-01',supplier:''},
+      {id:7,name:'Curamol',cat:'Analgesics',unit:'Bottles',qty:2,low:5,buy:23,sell:50,expiry:'2028-12-02',supplier:''},
+      {id:8,name:'Cetriplain',cat:'Antihistamines',unit:'Bottles',qty:8,low:6,buy:23,sell:50,expiry:'2028-12-01',supplier:''},
+      {id:9,name:'Flagyl',cat:'Antibiotics',unit:'Bottles',qty:6,low:6,buy:25,sell:50,expiry:'2028-12-01',supplier:''},
+      {id:10,name:'Diclofenac 100mg',cat:'Analgesics',unit:'Tabs',qty:400,low:50,buy:1,sell:5,expiry:'2028-12-02',supplier:''},
+      {id:11,name:'Lydia contraceptive injection',cat:'Other',unit:'Vials',qty:6,low:5,buy:95,sell:150,expiry:'2028-04-01',supplier:''},
+      {id:12,name:'Triphozed',cat:'Antihistamines',unit:'Bottles',qty:7,low:6,buy:27,sell:50,expiry:'2028-12-01',supplier:''},
+      {id:13,name:'Kofgon',cat:'Antihistamines',unit:'Bottles',qty:9,low:6,buy:30,sell:70,expiry:'2028-12-02',supplier:''},
+      {id:14,name:'Flugone-p',cat:'Antihistamines',unit:'Tabs',qty:4,low:6,buy:186,sell:250,expiry:'2028-03-29',supplier:''},
+      {id:15,name:'Ranferon',cat:'Cardiovascular',unit:'Bottles',qty:2,low:5,buy:323,sell:600,expiry:'2026-11-01',supplier:''},
+      {id:16,name:'Probeta N Drops',cat:'Antibiotics',unit:'Bottles',qty:7,low:6,buy:112,sell:180,expiry:'2028-12-02',supplier:''},
+      {id:17,name:'Ascoril Expectorant',cat:'Analgesics',unit:'Bottles',qty:2,low:5,buy:219,sell:300,expiry:'2028-12-01',supplier:''},
+      {id:18,name:'Hemoforce family syrup',cat:'Cardiovascular',unit:'Bottles',qty:4,low:6,buy:183,sell:300,expiry:'2027-04-01',supplier:''},
+      {id:19,name:'Albendazole',cat:'Gastrointestinal',unit:'Tabs',qty:9,low:6,buy:27,sell:50,expiry:'2028-01-01',supplier:''},
+      {id:20,name:'Albendazole syrup',cat:'Gastrointestinal',unit:'Bottles',qty:2,low:5,buy:27,sell:50,expiry:'2028-12-01',supplier:''},
+      {id:21,name:'Mediven 15 mg',cat:'Antihistamines',unit:'Pieces',qty:3,low:5,buy:47,sell:100,expiry:'2028-09-02',supplier:''},
+      {id:22,name:'Clozole-B',cat:'Dermatology',unit:'Pieces',qty:5,low:6,buy:79,sell:120,expiry:'2028-07-01',supplier:''},
+      {id:23,name:'Olcort-Hydrocortisone',cat:'Analgesics',unit:'Tabs',qty:6,low:6,buy:31,sell:80,expiry:'2027-11-01',supplier:''},
+      {id:24,name:'Xtraderm',cat:'Dermatology',unit:'Pieces',qty:3,low:5,buy:130,sell:200,expiry:'2027-03-01',supplier:''},
+      {id:25,name:'TEO',cat:'Antibiotics',unit:'Tabs',qty:5,low:6,buy:33,sell:60,expiry:'2028-05-01',supplier:''},
+      {id:26,name:'Rufenac Gel',cat:'Analgesics',unit:'Pieces',qty:6,low:6,buy:26,sell:70,expiry:'2028-12-01',supplier:''},
+      {id:27,name:'Zeditone-Piriton',cat:'Antihistamines',unit:'Bottles',qty:9,low:6,buy:21,sell:50,expiry:'2029-01-01',supplier:''},
+      {id:28,name:'Brufen-Triofen',cat:'Analgesics',unit:'Bottles',qty:6,low:6,buy:21,sell:50,expiry:'2029-01-01',supplier:''},
+      {id:29,name:'Benaflu toto',cat:'Antihistamines',unit:'Bottles',qty:3,low:5,buy:101,sell:200,expiry:'2028-09-01',supplier:''},
+      {id:30,name:'Relcer gel',cat:'Gastrointestinal',unit:'Bottles',qty:1,low:5,buy:282,sell:350,expiry:'2028-07-01',supplier:''},
+      {id:31,name:'Gastro gel',cat:'Gastrointestinal',unit:'Bottles',qty:3,low:5,buy:63,sell:150,expiry:'2028-04-01',supplier:''},
+      {id:32,name:'Ascoril',cat:'Antihistamines',unit:'Bottles',qty:2,low:5,buy:245,sell:320,expiry:'2027-03-01',supplier:''},
+      {id:33,name:'Coldcap syrup',cat:'Antihistamines',unit:'Bottles',qty:2,low:5,buy:115,sell:200,expiry:'2028-06-01',supplier:''},
+      {id:34,name:'AL-antimalarial',cat:'Antibiotics',unit:'Tabs',qty:9,low:6,buy:57,sell:100,expiry:'2028-08-01',supplier:''},
+      {id:35,name:'Fansidar/malodar',cat:'Antibiotics',unit:'Tabs',qty:4,low:6,buy:40,sell:80,expiry:'2028-05-01',supplier:''},
+      {id:36,name:'Clotrimazole-Benasten',cat:'Antifungals',unit:'Pieces',qty:2,low:5,buy:39,sell:100,expiry:'2028-10-01',supplier:''},
+      {id:37,name:'Calamine lotion',cat:'Dermatology',unit:'Bottles',qty:5,low:6,buy:30,sell:100,expiry:'2028-11-01',supplier:''},
+      {id:38,name:'Flagyl injection',cat:'Antibiotics',unit:'Bottles',qty:4,low:5,buy:40,sell:250,expiry:'2028-08-01',supplier:''},
+      {id:39,name:'Amoxyl syrup',cat:'Antibiotics',unit:'Bottles',qty:12,low:6,buy:26,sell:50,expiry:'2027-09-01',supplier:''},
+      {id:40,name:'Emergency contraceptive',cat:'Other',unit:'Pieces',qty:8,low:6,buy:35,sell:100,expiry:'2027-11-01',supplier:''}
+    ]);
+    DB.set('sales',[]); DB.set('stockUpdates',[]); DB.set('nextId',35); DB.set('nextPid',41); DB.set('activityLog',[]); DB.set('init4',true);
+  }
+}
+
+function logActivity(action,detail){
+  const log=DB.get('activityLog',[]);
+  log.push({ts:new Date().toISOString(),role:currentRole||'staff',action,detail});
+  if(log.length>1000)log.splice(0,log.length-1000);
+  DB.set('activityLog',log);
+}
+
+function selectRole(role){
+  selectedRole=role;
+  document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('selected'));
+  document.getElementById('role-'+role).classList.add('selected');
+  document.getElementById('admin-pass-wrap').style.display=role==='admin'?'block':'none';
+  document.getElementById('login-err').textContent='';
+  if(role==='admin')document.getElementById('admin-pass').focus();
+}
+
+function doLogin(){
+  if(selectedRole==='admin'){
+    if(document.getElementById('admin-pass').value!==getAdminPassword()){document.getElementById('login-err').textContent='Incorrect password.';return;}
+  }
+  currentRole=selectedRole;
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='flex';
+  buildNav();
+  logActivity('login',`Signed in as ${currentRole}`);
+  if(currentRole==='admin')renderDashboard();else renderStaffDashboard();
+}
+
+function logout(){
+  logActivity('logout','Signed out');
+  currentRole=null;cart=[];
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('admin-pass').value='';
+  document.getElementById('login-err').textContent='';
+  document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('selected'));
+  document.getElementById('role-user').classList.add('selected');
+  document.getElementById('admin-pass-wrap').style.display='none';
+  selectedRole='user';
+}
+
+function changePassword(){
+  const cur=document.getElementById('pw-current').value;
+  const nw=document.getElementById('pw-new').value;
+  const cf=document.getElementById('pw-confirm').value;
+  const err=document.getElementById('pw-err');
+  err.textContent='';
+  if(cur!==getAdminPassword()){err.textContent='Current password is incorrect.';return;}
+  if(nw.length<6){err.textContent='New password must be at least 6 characters.';return;}
+  if(nw!==cf){err.textContent='Passwords do not match.';return;}
+  DB.set('adminPassword',nw);
+  logActivity('security','Admin password changed');
+  closeModal('modal-change-pw');
+  ['pw-current','pw-new','pw-confirm'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('login-hint').textContent='Admin password has been customised.';
+  toast('Password updated ✓');
+}
+
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebar-overlay').style.display=document.getElementById('sidebar').classList.contains('open')?'block':'none';
+}
+
+function buildNav(){
+  const isAdmin=currentRole==='admin';
+  const color=isAdmin?'#3b4fa8':'#2d6a4f';
+  document.getElementById('user-pill').innerHTML=`<div class="user-pill-avatar" style="background:${color}">${isAdmin?'AD':'ST'}</div><div><div class="user-pill-name">${isAdmin?'Administrator':'Staff'}</div><div class="user-pill-role">${isAdmin?'Admin · Full Access':'Staff · Limited Access'}</div></div>`;
+  document.getElementById('change-pw-link').style.display=isAdmin?'inline':'none';
+  const badge=document.getElementById('mobile-role-badge');
+  badge.textContent=isAdmin?'ADMIN':'STAFF';
+  badge.style.background=isAdmin?'var(--admin-light)':'var(--accent-light)';
+  badge.style.color=isAdmin?'var(--admin)':'var(--accent)';
+  document.getElementById('mobile-staff-nav').style.display=isAdmin?'none':'block';
+  document.getElementById('sidebar-nav').innerHTML=isAdmin?`
+    <div class="nav-section-label">General</div>
+    <div class="nav-item active" onclick="navigate('dashboard',this)"><span class="nav-icon">◈</span> Dashboard</div>
+    <div class="nav-item" onclick="navigate('inventory',this)"><span class="nav-icon">◫</span> Inventory</div>
+    <div class="nav-item" onclick="navigate('pos',this)"><span class="nav-icon">◎</span> Point of Sale</div>
+    <div class="nav-section-label" style="margin-top:8px">Admin Only</div>
+    <div class="nav-item admin-nav" onclick="navigate('eod',this)"><span class="nav-icon">📅</span> End of Day <span class="nav-admin-badge">ADMIN</span></div>
+    <div class="nav-item admin-nav" onclick="navigate('financials',this)"><span class="nav-icon">◷</span> Financials <span class="nav-admin-badge">ADMIN</span></div>
+    <div class="nav-item admin-nav" onclick="navigate('reports',this)"><span class="nav-icon">◈</span> Reports <span class="nav-admin-badge">ADMIN</span></div>
+    <div class="nav-item admin-nav" onclick="navigate('activity',this)"><span class="nav-icon">◉</span> Staff Activity <span class="nav-admin-badge">ADMIN</span></div>
+  `:`
+    <div class="nav-section-label desktop-staff-nav">Quick Links</div>
+    <div class="nav-item active desktop-staff-nav" onclick="navigate('staff-dashboard',this)"><span class="nav-icon">◈</span> Dashboard</div>
+    <div class="nav-item desktop-staff-nav" onclick="navigate('pos',this)"><span class="nav-icon">◎</span> Point of Sale</div>
+    <div class="nav-item desktop-staff-nav" onclick="navigate('stock-update',this)"><span class="nav-icon">📦</span> Add Stock</div>
+    <div class="nav-item desktop-staff-nav" onclick="navigate('inventory',this)"><span class="nav-icon">◫</span> Inventory</div>
+    <div class="nav-item desktop-staff-nav" onclick="navigate('my-summary',this)"><span class="nav-icon">◷</span> My Summary</div>
+  `;
+  document.getElementById('th-buy-price').style.display=isAdmin?'':'none';
+  document.getElementById('th-actions').style.display=isAdmin?'':'none';
+  document.getElementById('btn-add-product').style.display=isAdmin?'flex':'none';
+}
+
+function mobileNav(sec,btnId){
+  document.querySelectorAll('.mobile-nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(btnId)?.classList.add('active');
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-'+sec)?.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  ({pos:renderPOS,'stock-update':renderStockUpdate,'staff-dashboard':renderStaffDashboard,inventory:renderInventory,'my-summary':renderMySummary})[sec]?.();
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').style.display='none';
+}
+
+function navigate(sec,el){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('sec-'+sec).classList.add('active');
+  if(el)el.classList.add('active');
+  ({dashboard:renderDashboard,'staff-dashboard':renderStaffDashboard,inventory:renderInventory,pos:renderPOS,financials:renderFinancials,reports:renderReports,'my-summary':renderMySummary,activity:renderActivityLog,eod:renderEOD,'stock-update':renderStockUpdate})[sec]?.();
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').style.display='none';
+}
+
+const fmt=n=>'KES '+(n||0).toLocaleString('en-KE',{minimumFractionDigits:0,maximumFractionDigits:0});
+const fmtDate=d=>{if(!d)return'—';return new Date(d+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});};
+const monthKey=d=>new Date(d.includes('T')?d:d+'T00:00:00').toLocaleDateString('en-GB',{month:'short',year:'numeric'});
+const daysUntil=d=>Math.ceil((new Date(d)-new Date())/86400000);
+const today=()=>new Date().toISOString().split('T')[0];
+
+function renderDashboard(){
+  document.getElementById('dash-date').textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const txns=DB.get('transactions',[]),prods=DB.get('products',[]);
+  const totalInc=txns.reduce((s,t)=>s+(t.income||0),0),totalExp=txns.reduce((s,t)=>s+(t.expense||0),0),bal=totalInc-totalExp;
+  const stockVal=prods.reduce((s,p)=>s+(p.qty||0)*(p.sell||0),0);
+  document.getElementById('dash-stats').innerHTML=`
+    <div class="stat-card"><div class="stat-label">Total Income</div><div class="stat-value green">${fmt(totalInc)}</div><div class="stat-sub">All time</div></div>
+    <div class="stat-card"><div class="stat-label">Total Expenses</div><div class="stat-value red">${fmt(totalExp)}</div><div class="stat-sub">All time</div></div>
+    <div class="stat-card"><div class="stat-label">Net Balance</div><div class="stat-value ${bal>=0?'green':'red'}">${fmt(bal)}</div><div class="stat-sub">Income − Expenses</div></div>
+    <div class="stat-card"><div class="stat-label">Stock Value</div><div class="stat-value blue">${fmt(stockVal)}</div><div class="stat-sub">${prods.length} products</div></div>`;
+  const low=prods.filter(p=>p.qty<=p.low);
+  document.getElementById('low-stock-list').innerHTML=low.length?'<div class="table-wrap"><table><thead><tr><th>Product</th><th>Qty</th><th>Status</th></tr></thead><tbody>'+low.map(p=>`<tr><td>${p.name}</td><td class="mono ${p.qty===0?'fin-expense':'warn'}">${p.qty}</td><td><span class="badge ${p.qty===0?'badge-red':'badge-warn'}">${p.qty===0?'Out':'Low'}</span></td></tr>`).join('')+'</tbody></table></div>':'<div class="empty"><div class="empty-icon">✓</div><div class="empty-text">All stock OK</div></div>';
+  const exp=prods.filter(p=>p.expiry&&daysUntil(p.expiry)<=30&&daysUntil(p.expiry)>0);
+  document.getElementById('expiry-list').innerHTML=exp.length?'<div class="table-wrap"><table><thead><tr><th>Product</th><th>Expiry</th><th>Days</th></tr></thead><tbody>'+exp.map(p=>`<tr><td>${p.name}</td><td>${fmtDate(p.expiry)}</td><td class="mono warn">${daysUntil(p.expiry)}d</td></tr>`).join('')+'</tbody></table></div>':'<div class="empty"><div class="empty-icon">✓</div><div class="empty-text">No products expiring soon</div></div>';
+  const recent=[...txns].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8);
+  document.getElementById('recent-txn').innerHTML=recent.map(t=>`<tr><td class="mono" style="font-size:12px">${fmtDate(t.date)}</td><td>${t.desc}</td><td><span class="badge badge-gray">${t.category}</span></td><td class="text-right fin-income">${t.income?fmt(t.income):'—'}</td><td class="text-right fin-expense">${t.expense?fmt(t.expense):'—'}</td><td class="text-right fin-balance" style="color:${(t.income-t.expense)>=0?'var(--accent)':'var(--danger)'}">${fmt(t.income-t.expense)}</td></tr>`).join('');
+}
+
+function renderStaffDashboard(){
+  document.getElementById('staff-dash-date').textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const sales=DB.get('sales',[]),prods=DB.get('products',[]),stockUpdates=DB.get('stockUpdates',[]);
+  const todayStr=today();
+  const todaySales=sales.filter(s=>s.date.startsWith(todayStr));
+  const todayStock=stockUpdates.filter(u=>u.date===todayStr);
+  const monthSales=sales.filter(s=>monthKey(s.date.split('T')[0])===monthKey(todayStr));
+  document.getElementById('staff-dash-stats').innerHTML=`
+    <div class="stat-card"><div class="stat-label">Today's Sales</div><div class="stat-value green">${fmt(todaySales.reduce((s,sl)=>s+sl.total,0))}</div><div class="stat-sub">${todaySales.length} transaction${todaySales.length!==1?'s':''}</div></div>
+    <div class="stat-card"><div class="stat-label">Month's Sales</div><div class="stat-value green">${fmt(monthSales.reduce((s,sl)=>s+sl.total,0))}</div><div class="stat-sub">${monthSales.length} transactions</div></div>
+    <div class="stat-card"><div class="stat-label">Stock Updates Today</div><div class="stat-value purple">${todayStock.reduce((s,u)=>s+u.items.length,0)}</div><div class="stat-sub">${todayStock.length} batch${todayStock.length!==1?'es':''}</div></div>
+    <div class="stat-card"><div class="stat-label">Low Stock Items</div><div class="stat-value warn">${prods.filter(p=>p.qty<=p.low).length}</div><div class="stat-sub">need restocking</div></div>`;
+  document.getElementById('staff-today-sales').innerHTML=todaySales.length?[...todaySales].reverse().map(s=>`<tr><td class="mono" style="font-size:11px">${new Date(s.date).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</td><td style="font-size:12px">${s.items.map(i=>`${i.name}×${i.qty}`).join(', ')}</td><td class="text-right fin-income">${fmt(s.total)}</td></tr>`).join(''):'<tr><td colspan="3"><div class="empty" style="padding:20px"><div class="empty-text">No sales today yet</div></div></td></tr>';
+  const allTodayItems=todayStock.flatMap(u=>u.items.map(item=>({...item,note:u.note})));
+  document.getElementById('staff-today-stock').innerHTML=allTodayItems.length?'<div class="table-wrap"><table><thead><tr><th>Product</th><th>Added</th><th>Note</th></tr></thead><tbody>'+allTodayItems.map(i=>`<tr><td style="font-size:12px">${i.name}</td><td class="mono" style="color:var(--stock)">+${i.added} ${i.unit}</td><td style="font-size:11px;color:var(--text-muted)">${i.note||'—'}</td></tr>`).join('')+'</tbody></table></div>':'<div class="empty" style="padding:20px"><div class="empty-icon">📦</div><div class="empty-text">No stock added today</div></div>';
+  const low=prods.filter(p=>p.qty<=p.low);
+  document.getElementById('staff-low-stock').innerHTML=low.length?'<div class="table-wrap"><table><thead><tr><th>Product</th><th>Current Qty</th><th>Status</th></tr></thead><tbody>'+low.map(p=>`<tr><td>${p.name}</td><td class="mono ${p.qty===0?'fin-expense':'warn'}">${p.qty} ${p.unit}</td><td><span class="badge ${p.qty===0?'badge-red':'badge-warn'}">${p.qty===0?'Out of stock':'Low stock'}</span></td></tr>`).join('')+'</tbody></table></div>':'<div class="empty" style="padding:20px"><div class="empty-icon">✓</div><div class="empty-text">All stock levels OK</div></div>';
+}
+
+function renderInventory(){
+  const isAdmin=currentRole==='admin';
+  const q=document.getElementById('inv-search')?.value.toLowerCase()||'';
+  const filtered=DB.get('products',[]).filter(p=>p.name.toLowerCase().includes(q)||p.cat.toLowerCase().includes(q));
+  const badge=p=>{if(p.qty===0)return'<span class="badge badge-red">Out of stock</span>';if(p.qty<=p.low)return'<span class="badge badge-warn">Low stock</span>';if(p.expiry&&daysUntil(p.expiry)<=30)return'<span class="badge badge-warn">Expiring soon</span>';return'<span class="badge badge-green">In stock</span>';};
+  document.getElementById('inv-table').innerHTML=filtered.length?filtered.map(p=>`<tr><td><strong style="font-size:13px">${p.name}</strong></td><td><span class="badge badge-gray">${p.cat}</span></td><td class="mono ${p.qty<=p.low?'fin-expense':''}">${p.qty}</td><td style="color:var(--text-muted)">${p.unit}</td>${isAdmin?`<td class="mono">${fmt(p.buy)}</td>`:''}<td class="mono">${fmt(p.sell)}</td><td class="mono" style="font-size:12px;${p.expiry&&daysUntil(p.expiry)<=30?'color:var(--warn)':''}">${fmtDate(p.expiry)}</td><td>${badge(p)}</td>${isAdmin?`<td><div class="flex gap-2"><button class="btn btn-ghost btn-sm" onclick="editProduct(${p.id})">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteProduct(${p.id})">✕</button></div></td>`:''}</tr>`).join(''):`<tr><td colspan="${isAdmin?9:7}"><div class="empty"><div class="empty-icon">◫</div><div class="empty-text">No products found</div></div></td></tr>`;
+}
+
+function saveProduct(){
+  const name=document.getElementById('p-name').value.trim();
+  if(!name){toast('Please enter a product name');return;}
+  const prods=DB.get('products',[]),editId=document.getElementById('modal-add-product').dataset.editId;
+  const p={id:editId?parseInt(editId):DB.get('nextPid',41),name,cat:document.getElementById('p-cat').value,unit:document.getElementById('p-unit').value,qty:parseFloat(document.getElementById('p-qty').value)||0,low:parseFloat(document.getElementById('p-low').value)||10,buy:parseFloat(document.getElementById('p-buy').value)||0,sell:parseFloat(document.getElementById('p-sell').value)||0,expiry:document.getElementById('p-expiry').value,supplier:document.getElementById('p-supplier').value};
+  if(editId){const i=prods.findIndex(x=>x.id===p.id);const old=prods[i];prods[i]=p;logActivity('edit',`Edited: ${p.name} qty ${old.qty}→${p.qty}`);}
+  else{prods.push(p);DB.set('nextPid',p.id+1);logActivity('add',`Added product: ${p.name}`);}
+  DB.set('products',prods);closeModal('modal-add-product');renderInventory();toast(editId?'Product updated':'Product added');
+}
+
+function editProduct(id){
+  const p=DB.get('products',[]).find(x=>x.id===id);if(!p)return;
+  document.getElementById('p-name').value=p.name;document.getElementById('p-cat').value=p.cat;document.getElementById('p-unit').value=p.unit;
+  document.getElementById('p-qty').value=p.qty;document.getElementById('p-low').value=p.low;document.getElementById('p-buy').value=p.buy;
+  document.getElementById('p-sell').value=p.sell;document.getElementById('p-expiry').value=p.expiry||'';document.getElementById('p-supplier').value=p.supplier||'';
+  document.getElementById('modal-add-product').dataset.editId=id;
+  document.querySelector('#modal-add-product .modal-title').textContent='Edit Product';
+  openModal('modal-add-product');
+}
+
+function deleteProduct(id){
+  const p=DB.get('products',[]).find(x=>x.id===id);
+  if(!confirm(`Delete "${p?.name}"?`))return;
+  DB.set('products',DB.get('products',[]).filter(p=>p.id!==id));
+  logActivity('delete',`Deleted: ${p?.name}`);
+  renderInventory();toast('Product deleted');
+}
+
+function renderPOS(){
+  const q=document.getElementById('pos-search')?.value.toLowerCase()||'';
+  const filtered=DB.get('products',[]).filter(p=>p.qty>0&&(p.name.toLowerCase().includes(q)||p.cat.toLowerCase().includes(q)));
+  document.getElementById('pos-grid').innerHTML=filtered.length?filtered.map(p=>`<div class="pos-item" onclick="addToCart(${p.id})"><div class="pos-item-name">${p.name}</div><div class="pos-item-price">${fmt(p.sell)}</div><div class="pos-item-stock">${p.qty} ${p.unit}</div></div>`).join(''):'<div style="color:var(--text-muted);padding:20px;font-size:13px">No products in stock</div>';
+  renderCart();
+}
+
+function addToCart(pid){
+  const p=DB.get('products',[]).find(x=>x.id===pid);
+  if(!p||p.qty<=0){toast('Out of stock');return;}
+  const ex=cart.find(c=>c.id===pid);
+  if(ex){if(ex.qty>=p.qty){toast('Max stock reached');return;}ex.qty++;}
+  else cart.push({id:pid,name:p.name,price:p.sell,qty:1,unit:p.unit});
+  renderCart();
+}
+
+function renderCart(){
+  const el=document.getElementById('cart-items');
+  if(!cart.length){el.innerHTML='<div style="color:var(--text-muted);font-size:13px;padding:12px 0">Tap a product to add</div>';document.getElementById('cart-total').textContent='KES 0';return;}
+  el.innerHTML=cart.map(c=>`<div class="cart-item"><div class="cart-item-name">${c.name}</div><div class="cart-item-qty"><button class="qty-btn" onclick="changeQty(${c.id},-1)">−</button><span class="mono" style="min-width:24px;text-align:center;font-size:14px">${c.qty}</span><button class="qty-btn" onclick="changeQty(${c.id},1)">+</button></div><div class="mono" style="margin-left:8px;min-width:64px;text-align:right;font-size:13px">${fmt(c.price*c.qty)}</div></div>`).join('');
+  document.getElementById('cart-total').textContent=fmt(cart.reduce((s,c)=>s+c.price*c.qty,0));
+}
+
+function changeQty(pid,delta){
+  const p=DB.get('products',[]).find(x=>x.id===pid),item=cart.find(c=>c.id===pid);if(!item)return;
+  item.qty+=delta;
+  if(item.qty<=0)cart=cart.filter(c=>c.id!==pid);
+  if(delta>0&&item.qty>p.qty){item.qty=p.qty;toast('Max stock reached');}
+  renderCart();
+}
+
+function clearCart(){cart=[];renderCart();}
+
+function completeSale(){
+  if(!cart.length){toast('Cart is empty');return;}
+  const total=cart.reduce((s,c)=>s+c.price*c.qty,0);
+  const prods=DB.get('products',[]);
+  cart.forEach(c=>{const p=prods.find(x=>x.id===c.id);if(p)p.qty=Math.max(0,p.qty-c.qty);});
+  DB.set('products',prods);
+  const txns=DB.get('transactions',[]),nid=DB.get('nextId',100);
+  txns.push({id:nid,date:today(),account:'Cash',category:'Sales',desc:'POS Sale: '+cart.map(c=>c.name).join(', '),income:total,expense:0});
+  DB.set('transactions',txns);DB.set('nextId',nid+1);
+  const sales=DB.get('sales',[]);
+  sales.push({date:new Date().toISOString(),items:cart.map(c=>({...c})),total,role:currentRole});
+  DB.set('sales',sales);
+  logActivity('sale',`Sale ${fmt(total)} — ${cart.map(c=>`${c.name} ×${c.qty}`).join(', ')}`);
+  toast(`Sale of ${fmt(total)} recorded ✓`);
+  cart=[];renderPOS();
+}
+
+function renderStockUpdate(){
+  const q=document.getElementById('stock-search')?.value.toLowerCase()||'';
+  const prods=DB.get('products',[]).filter(p=>p.name.toLowerCase().includes(q)||p.cat.toLowerCase().includes(q));
+  document.getElementById('stock-update-grid').innerHTML=prods.map(p=>`
+    <div class="stock-item-card">
+      <div class="stock-item-name">${p.name}</div>
+      <div class="stock-item-current">Now: ${p.qty} ${p.unit}${p.qty<=p.low?' ⚠️':''}</div>
+      <div class="stock-input-row">
+        <span style="font-size:13px;color:var(--text-muted);font-weight:600">+</span>
+        <input type="number" class="stock-qty-input" id="su-${p.id}" min="0" placeholder="0" inputmode="numeric">
+        <span class="stock-item-unit">${p.unit}</span>
+      </div>
+    </div>`).join('');
+}
+
+function submitStockUpdate(){
+  const prods=DB.get('products',[]);
+  const note=document.getElementById('stock-note').value.trim();
+  const updates=[];
+  prods.forEach(p=>{
+    const inp=document.getElementById('su-'+p.id);
+    if(!inp)return;
+    const added=parseFloat(inp.value)||0;
+    if(added>0){updates.push({id:p.id,name:p.name,unit:p.unit,added,prevQty:p.qty});p.qty=Math.round((p.qty+added)*100)/100;}
+  });
+  if(!updates.length){toast('No quantities entered');return;}
+  DB.set('products',prods);
+  const stockUpdates=DB.get('stockUpdates',[]);
+  stockUpdates.push({date:today(),ts:new Date().toISOString(),note,items:updates,role:currentRole});
+  DB.set('stockUpdates',stockUpdates);
+  logActivity('stock',`Added stock for ${updates.length} product${updates.length!==1?'s':''}: ${updates.map(u=>`${u.name} +${u.added}`).join(', ')}${note?' ('+note+')':''}`);
+  document.getElementById('stock-note').value='';
+  document.querySelectorAll('.stock-qty-input').forEach(i=>i.value='');
+  toast(`Stock updated for ${updates.length} product${updates.length!==1?'s':''} ✓`);
+  renderStockUpdate();
+}
+
+function renderEOD(){
+  const dateEl=document.getElementById('eod-date');
+  if(!dateEl.value)dateEl.value=today();
+  const d=dateEl.value,dLabel=fmtDate(d);
+  const sales=DB.get('sales',[]).filter(s=>s.date.startsWith(d));
+  const stockUpdates=DB.get('stockUpdates',[]).filter(u=>u.date===d);
+  const log=DB.get('activityLog',[]).filter(e=>e.ts.startsWith(d));
+  const salesTotal=sales.reduce((s,sl)=>s+sl.total,0);
+  const totalItemsSold=sales.reduce((s,sl)=>s+sl.items.reduce((a,i)=>a+i.qty,0),0);
+  const totalStockItems=stockUpdates.reduce((s,u)=>s+u.items.length,0);
+  const totalStockUnits=stockUpdates.reduce((s,u)=>s+u.items.reduce((a,i)=>a+i.added,0),0);
+  const soldMap={};
+  sales.forEach(sl=>sl.items.forEach(i=>{if(!soldMap[i.name])soldMap[i.name]={name:i.name,qty:0,revenue:0};soldMap[i.name].qty+=i.qty;soldMap[i.name].revenue+=i.price*i.qty;}));
+  const soldList=Object.values(soldMap).sort((a,b)=>b.revenue-a.revenue);
+  const stockMap={};
+  stockUpdates.forEach(u=>u.items.forEach(i=>{if(!stockMap[i.name])stockMap[i.name]={name:i.name,unit:i.unit,added:0};stockMap[i.name].added+=i.added;}));
+  const stockList=Object.values(stockMap).sort((a,b)=>b.added-a.added);
+  document.getElementById('eod-content').innerHTML=`
+    <div class="eod-highlight">
+      <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--accent);margin-bottom:12px;">📅 Summary for ${dLabel}</div>
+      <div class="eod-highlight-row"><span class="eod-highlight-label">Total Sales Revenue</span><span class="eod-highlight-val" style="color:var(--accent)">${fmt(salesTotal)}</span></div>
+      <div class="eod-highlight-row"><span class="eod-highlight-label">Transactions</span><span class="eod-highlight-val">${sales.length}</span></div>
+      <div class="eod-highlight-row"><span class="eod-highlight-label">Total Items Sold</span><span class="eod-highlight-val">${totalItemsSold} units across ${soldList.length} products</span></div>
+      <div class="eod-highlight-row" style="border-top:1px solid #b2d8c8;padding-top:10px;margin-top:6px"><span class="eod-highlight-label">Stock Batches Received</span><span class="eod-highlight-val" style="color:var(--stock)">${stockUpdates.length}</span></div>
+      <div class="eod-highlight-row"><span class="eod-highlight-label">Products Restocked</span><span class="eod-highlight-val" style="color:var(--stock)">${totalStockItems} products · ${totalStockUnits} units total</span></div>
+    </div>
+    <div class="eod-section">
+      <div class="eod-section-title">🛒 Sales Transactions (${sales.length})</div>
+      ${sales.length?`<div class="card"><div class="table-wrap"><table><thead><tr><th>Time</th><th>Items Sold</th><th class="text-right">Total</th></tr></thead><tbody>
+        ${[...sales].reverse().map(s=>`<tr><td class="mono" style="font-size:12px">${new Date(s.date).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</td><td style="font-size:12px">${s.items.map(i=>`${i.name} <span class="badge badge-gray">×${i.qty}</span>`).join(' ')}</td><td class="text-right fin-income">${fmt(s.total)}</td></tr>`).join('')}
+        <tr class="fin-summary-row"><td colspan="2" style="font-size:12px">Day Total</td><td class="text-right fin-income">${fmt(salesTotal)}</td></tr>
+      </tbody></table></div></div>` : '<div class="empty" style="padding:20px"><div class="empty-text">No sales recorded on this date</div></div>'}
+    </div>
+    <div class="eod-section">
+      <div class="eod-section-title">📊 Items Sold — Breakdown</div>
+      ${soldList.length?`<div class="card"><div class="table-wrap"><table><thead><tr><th>Product</th><th class="text-right">Qty Sold</th><th class="text-right">Revenue</th></tr></thead><tbody>
+        ${soldList.map(i=>`<tr><td>${i.name}</td><td class="text-right mono">${i.qty}</td><td class="text-right fin-income">${fmt(i.revenue)}</td></tr>`).join('')}
+        <tr class="fin-summary-row"><td>Total</td><td class="text-right mono">${totalItemsSold}</td><td class="text-right fin-income">${fmt(salesTotal)}</td></tr>
+      </tbody></table></div></div>` : '<div class="empty" style="padding:20px"><div class="empty-text">No items sold</div></div>'}
+    </div>
+    <div class="eod-section">
+      <div class="eod-section-title">📦 Stock Added (${stockList.length} products, ${stockUpdates.length} batch${stockUpdates.length!==1?'es':''})</div>
+      ${stockList.length?`<div class="card"><div class="table-wrap"><table><thead><tr><th>Product</th><th class="text-right">Units Added</th></tr></thead><tbody>
+        ${stockList.map(i=>`<tr><td>${i.name}</td><td class="text-right mono" style="color:var(--stock)">+${i.added} ${i.unit}</td></tr>`).join('')}
+        <tr class="stock-summary-row"><td>Total</td><td class="text-right mono" style="color:var(--stock)">+${totalStockUnits} units</td></tr>
+      </tbody></table></div></div>` : '<div class="empty" style="padding:20px"><div class="empty-text">No stock received on this date</div></div>'}
+    </div>
+    ${stockUpdates.length?`<div class="eod-section">
+      <div class="eod-section-title">📋 Stock Batch Details</div>
+      <div class="card"><div class="table-wrap"><table><thead><tr><th>Time</th><th>Note</th><th>Products Added</th></tr></thead><tbody>
+        ${stockUpdates.map(u=>`<tr><td class="mono" style="font-size:12px">${new Date(u.ts).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</td><td style="font-size:12px;color:var(--text-muted)">${u.note||'—'}</td><td style="font-size:12px">${u.items.map(i=>`${i.name} <span class="badge badge-purple">+${i.added}</span>`).join(' ')}</td></tr>`).join('')}
+      </tbody></table></div></div>
+    </div>`:''}
+    <div class="eod-section">
+      <div class="eod-section-title">🔑 All Staff Actions (${log.length})</div>
+      ${log.length?`<div class="card"><div class="table-wrap"><table><thead><tr><th>Time</th><th>Role</th><th>Action</th><th>Detail</th></tr></thead><tbody>
+        ${log.map(e=>`<tr><td class="mono" style="font-size:11px">${new Date(e.ts).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</td><td><span class="badge ${e.role==='admin'?'badge-blue':'badge-green'}">${e.role}</span></td><td style="font-size:12px">${e.action}</td><td style="font-size:12px;color:var(--text-muted)">${e.detail}</td></tr>`).join('')}
+      </tbody></table></div></div>` : '<div class="empty" style="padding:20px"><div class="empty-text">No staff actions logged</div></div>'}
+    </div>`;
+}
+
+function switchFinTab(tab,el){
+  document.querySelectorAll('#sec-financials .tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');finTab=tab;renderFinancials();
+}
+
+function renderFinancials(){
+  let txns=DB.get('transactions',[]).sort((a,b)=>a.date.localeCompare(b.date));
+  let runBal=0;
+  if(finTab!=='all'){
+    const all=[...txns],filtered=txns.filter(t=>monthKey(t.date)===finTab),start=filtered[0]?.date;
+    all.filter(t=>start&&t.date<start).forEach(t=>runBal+=(t.income||0)-(t.expense||0));
+    txns=filtered;
+  }
+  const byMonth={};
+  txns.forEach(t=>{const mk=monthKey(t.date);if(!byMonth[mk])byMonth[mk]=[];byMonth[mk].push(t);});
+  let html='';
+  Object.entries(byMonth).forEach(([month,rows])=>{
+    rows.forEach(t=>{runBal+=(t.income||0)-(t.expense||0);html+=`<tr><td class="mono" style="font-size:12px">${fmtDate(t.date)}</td><td style="color:var(--text-muted)">${t.account||'—'}</td><td><span class="badge badge-gray">${t.category}</span></td><td>${t.desc}</td><td class="text-right fin-income">${t.income?fmt(t.income):'—'}</td><td class="text-right fin-expense">${t.expense?fmt(t.expense):'—'}</td><td class="text-right fin-balance" style="color:${runBal>=0?'var(--accent)':'var(--danger)'}">${fmt(runBal)}</td></tr>`;});
+    const mI=rows.reduce((s,t)=>s+(t.income||0),0),mE=rows.reduce((s,t)=>s+(t.expense||0),0);
+    html+=`<tr class="fin-summary-row"><td colspan="4" style="font-size:12px">▶ ${month} Summary</td><td class="text-right fin-income">${fmt(mI)}</td><td class="text-right fin-expense">${fmt(mE)}</td><td class="text-right fin-balance" style="color:${(mI-mE)>=0?'var(--accent)':'var(--danger)'}">${fmt(mI-mE)}</td></tr>`;
+  });
+  document.getElementById('fin-table').innerHTML=html||'<tr><td colspan="7"><div class="empty"><div class="empty-text">No transactions</div></div></td></tr>';
+}
+
+function saveTransaction(){
+  const date=document.getElementById('t-date').value,desc=document.getElementById('t-desc').value.trim();
+  if(!date||!desc){toast('Please fill in date and description');return;}
+  const txns=DB.get('transactions',[]),nid=DB.get('nextId',100);
+  txns.push({id:nid,date,account:document.getElementById('t-account').value,category:document.getElementById('t-cat').value,desc,income:parseFloat(document.getElementById('t-inc').value)||0,expense:parseFloat(document.getElementById('t-exp').value)||0});
+  DB.set('transactions',txns);DB.set('nextId',nid+1);
+  logActivity('add',`Added transaction: ${desc}`);
+  closeModal('modal-add-txn');renderFinancials();toast('Transaction saved');
+}
+
+function renderReports(){
+  const txns=DB.get('transactions',[]),sales=DB.get('sales',[]);
+  const totalInc=txns.reduce((s,t)=>s+(t.income||0),0),totalExp=txns.reduce((s,t)=>s+(t.expense||0),0);
+  document.getElementById('rep-stats').innerHTML=`
+    <div class="stat-card"><div class="stat-label">Total Revenue</div><div class="stat-value green">${fmt(totalInc)}</div></div>
+    <div class="stat-card"><div class="stat-label">Total Expenses</div><div class="stat-value red">${fmt(totalExp)}</div></div>
+    <div class="stat-card"><div class="stat-label">Net Profit</div><div class="stat-value ${totalInc-totalExp>=0?'green':'red'}">${fmt(totalInc-totalExp)}</div></div>
+    <div class="stat-card"><div class="stat-label">POS Sales</div><div class="stat-value">${sales.length}</div><div class="stat-sub">${fmt(sales.reduce((s,sl)=>s+sl.total,0))} total</div></div>`;
+  const byMonth={};
+  txns.forEach(t=>{const mk=monthKey(t.date);if(!byMonth[mk])byMonth[mk]={inc:0,exp:0};byMonth[mk].inc+=t.income||0;byMonth[mk].exp+=t.expense||0;});
+  const months=Object.keys(byMonth),maxVal=Math.max(...months.map(m=>Math.max(byMonth[m].inc,byMonth[m].exp)),1);
+  document.getElementById('chart-bars').innerHTML=months.map(m=>{const iH=Math.round((byMonth[m].inc/maxVal)*120),eH=Math.round((byMonth[m].exp/maxVal)*120);return`<div class="chart-bar-wrap"><div style="display:flex;gap:3px;align-items:flex-end;height:120px"><div class="chart-bar income" style="height:${iH}px;width:14px"></div><div class="chart-bar expense" style="height:${eH}px;width:14px"></div></div><div class="chart-label">${m.split(' ')[0]}<br>${m.split(' ')[1]?.slice(2)}</div></div>`;}).join('');
+  let cum=0;
+  document.getElementById('monthly-summary').innerHTML=months.map(m=>{const net=byMonth[m].inc-byMonth[m].exp;cum+=net;return`<tr><td>${m}</td><td class="text-right fin-income">${fmt(byMonth[m].inc)}</td><td class="text-right fin-expense">${fmt(byMonth[m].exp)}</td><td class="text-right fin-balance" style="color:${net>=0?'var(--accent)':'var(--danger)'}">${fmt(net)}</td></tr>`;}).join('')+`<tr style="border-top:2px solid var(--border-strong);font-weight:600"><td>Cumulative</td><td class="text-right fin-income">${fmt(totalInc)}</td><td class="text-right fin-expense">${fmt(totalExp)}</td><td class="text-right" style="color:${cum>=0?'var(--accent)':'var(--danger)'};font-family:var(--mono)">${fmt(cum)}</td></tr>`;
+  document.getElementById('sales-history').innerHTML=sales.length?[...sales].reverse().slice(0,30).map(s=>`<tr><td class="mono" style="font-size:12px">${new Date(s.date).toLocaleString('en-GB')}</td><td>${s.items.map(i=>`${i.name} ×${i.qty}`).join(', ')}</td><td class="text-right fin-income">${fmt(s.total)}</td></tr>`).join(''):'<tr><td colspan="3"><div class="empty"><div class="empty-text">No POS sales yet</div></div></td></tr>';
+}
+
+function renderActivityLog(){
+  const log=[...DB.get('activityLog',[])].reverse();
+  const icon={sale:'🛒',edit:'✏️',delete:'🗑️',add:'➕',login:'🔑',logout:'🚪',security:'🔒',stock:'📦'};
+  document.getElementById('activity-table').innerHTML=log.length?log.map(e=>{const dt=new Date(e.ts);const ts=dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short'})+' '+dt.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});return`<tr style="font-size:12.5px"><td class="mono" style="font-size:11px;white-space:nowrap">${ts}</td><td><span class="badge ${e.role==='admin'?'badge-blue':'badge-green'}">${e.role}</span></td><td>${icon[e.action]||'◉'} ${e.action}</td><td style="color:var(--text-muted)">${e.detail}</td></tr>`;}).join(''):'<tr><td colspan="4"><div class="empty"><div class="empty-icon">◉</div><div class="empty-text">No activity yet</div></div></td></tr>';
+}
+
+function clearActivityLog(){
+  if(!confirm('Clear all activity log?'))return;
+  DB.set('activityLog',[]);renderActivityLog();toast('Activity log cleared');
+}
+
+function renderMySummary(){
+  const sales=DB.get('sales',[]),prods=DB.get('products',[]),stockUpdates=DB.get('stockUpdates',[]);
+  const todayStr=today(),thisMonth=monthKey(todayStr);
+  const monthSales=sales.filter(s=>monthKey(s.date.split('T')[0])===thisMonth);
+  const monthStock=stockUpdates.filter(u=>monthKey(u.date)===thisMonth);
+  const stockVal=prods.reduce((s,p)=>s+(p.qty||0)*(p.sell||0),0);
+  document.getElementById('summary-stats').innerHTML=`
+    <div class="stat-card"><div class="stat-label">Sales This Month</div><div class="stat-value green">${fmt(monthSales.reduce((s,sl)=>s+sl.total,0))}</div><div class="stat-sub">${monthSales.length} transactions</div></div>
+    <div class="stat-card"><div class="stat-label">All-Time Sales</div><div class="stat-value green">${fmt(sales.reduce((s,sl)=>s+sl.total,0))}</div><div class="stat-sub">${sales.length} total</div></div>
+    <div class="stat-card"><div class="stat-label">Stock Updates</div><div class="stat-value purple">${monthStock.reduce((s,u)=>s+u.items.length,0)}</div><div class="stat-sub">products restocked this month</div></div>
+    <div class="stat-card"><div class="stat-label">Stock Value</div><div class="stat-value blue">${fmt(stockVal)}</div><div class="stat-sub">${prods.filter(p=>p.qty>0).length} in stock</div></div>`;
+  document.getElementById('my-sales-table').innerHTML=monthSales.length?[...monthSales].reverse().map(s=>`<tr><td class="mono" style="font-size:11px">${new Date(s.date).toLocaleString('en-GB')}</td><td style="font-size:12px">${s.items.map(i=>`${i.name} ×${i.qty}`).join(', ')}</td><td class="text-right fin-income">${fmt(s.total)}</td></tr>`).join(''):'<tr><td colspan="3"><div class="empty" style="padding:20px"><div class="empty-text">No sales this month</div></div></td></tr>';
+  const allStockItems=monthStock.flatMap(u=>u.items.map(i=>({...i,date:u.date,note:u.note})));
+  document.getElementById('my-stock-table').innerHTML=allStockItems.length?[...allStockItems].reverse().map(i=>`<tr><td class="mono" style="font-size:11px">${fmtDate(i.date)}</td><td style="font-size:12px">${i.name}</td><td class="mono" style="color:var(--stock)">+${i.added} ${i.unit}</td></tr>`).join(''):'<tr><td colspan="3"><div class="empty" style="padding:20px"><div class="empty-text">No stock updates this month</div></div></td></tr>';
+}
+
+function openModal(id){
+  const m=document.getElementById(id);
+  if(id==='modal-add-product'&&!m.dataset.editId){['p-name','p-qty','p-low','p-buy','p-sell','p-expiry','p-supplier'].forEach(f=>document.getElementById(f).value='');document.getElementById('p-cat').value='Analgesics';document.getElementById('p-unit').value='Tabs';document.querySelector('#modal-add-product .modal-title').textContent='Add Product';}
+  if(id==='modal-add-txn'){document.getElementById('t-date').value=today();['t-desc','t-inc','t-exp'].forEach(f=>document.getElementById(f).value='');}
+  if(id==='modal-change-pw')document.getElementById('pw-err').textContent='';
+  m.classList.add('open');
+}
+function closeModal(id){const m=document.getElementById(id);m.classList.remove('open');delete m.dataset.editId;}
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)closeModal(m.id);}));
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
+
+initData();
+</script>
+</body>
+</html>

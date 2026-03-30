@@ -1,0 +1,74 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: 'DM Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+
+  /* Cohesive Pharmacy Palette */
+  --color-background: hsl(45 17% 96%); /* #f7f6f3 */
+  --color-surface: hsl(0 0% 100%);
+  --color-foreground: hsl(45 8% 9%); /* #1a1916 */
+  --color-muted: hsl(45 10% 92%);
+  --color-muted-foreground: hsl(33 7% 51%); /* #8a8278 */
+  
+  --color-border: hsl(45 15% 89%); /* #e8e4dc */
+  --color-border-strong: hsl(45 22% 77%); /* #d0cab8 */
+
+  --color-primary: hsl(153 40% 30%); /* #2d6a4f */
+  --color-primary-light: hsl(153 45% 94%); /* #e8f4f0 */
+  --color-primary-hover: hsl(153 45% 25%);
+  --color-primary-foreground: hsl(0 0% 100%);
+
+  --color-admin: hsl(229 48% 45%); /* #3b4fa8 */
+  --color-admin-light: hsl(229 55% 96%);
+  --color-admin-foreground: hsl(0 0% 100%);
+
+  --color-stock: hsl(277 43% 44%); /* #7b3fa0 */
+  --color-stock-light: hsl(277 50% 96%);
+  --color-stock-foreground: hsl(0 0% 100%);
+
+  --color-danger: hsl(6 63% 46%); /* #c0392b */
+  --color-danger-light: hsl(6 70% 96%);
+  --color-danger-foreground: hsl(0 0% 100%);
+
+  --color-warning: hsl(43 80% 46%); /* #d4a017 */
+  --color-warning-light: hsl(43 85% 96%);
+  --color-warning-foreground: hsl(45 8% 9%);
+
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+}
+
+@layer base {
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold tracking-tight;
+  }
+}
+
+@layer utilities {
+  .shadow-soft {
+    box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  }
+  .shadow-hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,.10);
+  }
+  
+  .glass-panel {
+    @apply bg-surface/80 backdrop-blur-md border border-white/20;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
