@@ -1,9 +1,22 @@
 {
-  "buildCommand": "pnpm --filter @workspace/pharmacy run build",
-  "outputDirectory": "artifacts/pharmacy/dist",
+  "version": 2,
   "installCommand": "pnpm install",
+  "buildCommand": "pnpm run build",
   "framework": null,
+  "functions": {
+    "artifacts/api-server/api/index.ts": {
+      "runtime": "@vercel/node",
+      "maxDuration": 30
+    }
+  },
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/api/(.*)",
+      "destination": "/artifacts/api-server/api/index.ts"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
   ]
 }
